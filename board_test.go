@@ -6,9 +6,9 @@ import (
 
 func TestNewBoard(t *testing.T) {
 	boardSize := 8
-	minesCount := 10
+	holesCount := 10
 
-	board := NewArrayBoard(boardSize, minesCount)
+	board := NewArrayBoard(boardSize, holesCount)
 
 	// Assert the dimensions of the board
 	if len(board.Cells) != boardSize {
@@ -20,38 +20,38 @@ func TestNewBoard(t *testing.T) {
 		}
 	}
 
-	// Assert the number of mines in the board
+	// Assert the number of holes in the board
 	count := 0
 	for _, row := range board.Cells {
 		for _, cell := range row {
-			if cell.IsMine {
+			if cell.IsHole {
 				count++
 			}
 		}
 	}
-	if count != minesCount {
-		t.Errorf("Expected mines count %d, got %d", minesCount, count)
+	if count != holesCount {
+		t.Errorf("Expected holes count %d, got %d", holesCount, count)
 	}
 }
 
 func TestOpenCell(t *testing.T) {
 	boardSize := 8
-	minesCount := 10
+	holesCount := 10
 
-	board := NewArrayBoard(boardSize, minesCount)
+	board := NewArrayBoard(boardSize, holesCount)
 
-	// Test opening a non-mine cell
+	// Test opening a non-hole cell
 	x, y := 0, 0
 	board.OpenCell(x, y)
 	if !board.Cells[x][y].IsOpen {
 		t.Errorf("Expected cell (%d, %d) to be open, but it is not", x, y)
 	}
 
-	// Test opening a mine cell
-	mineX, mineY := findMineCoordinates(board)
-	board.OpenCell(mineX, mineY)
-	if board.Cells[mineX][mineY].IsOpen {
-		t.Errorf("Expected mine cell (%d, %d) to remain closed, but it is open", mineX, mineY)
+	// Test opening a hole cell
+	holeX, holeY := findHoleCoordinates(board)
+	board.OpenCell(holeX, holeY)
+	if board.Cells[holeX][holeY].IsOpen {
+		t.Errorf("Expected hole cell (%d, %d) to remain closed, but it is open", holeX, holeY)
 	}
 }
 
@@ -61,25 +61,25 @@ func TestOpenAdjacentCells(t *testing.T) {
 	board := NewArrayBoard(3, 0)
 
 	// Set up the board with specific cell configurations
-	board.Cells[0][0].IsMine = false
-	board.Cells[0][1].IsMine = true
-	board.Cells[0][2].IsMine = false
-	board.Cells[1][0].IsMine = false
-	board.Cells[1][1].IsMine = false
-	board.Cells[1][2].IsMine = false
-	board.Cells[2][0].IsMine = false
-	board.Cells[2][1].IsMine = false
-	board.Cells[2][2].IsMine = false
+	board.Cells[0][0].IsHole = false
+	board.Cells[0][1].IsHole = true
+	board.Cells[0][2].IsHole = false
+	board.Cells[1][0].IsHole = false
+	board.Cells[1][1].IsHole = false
+	board.Cells[1][2].IsHole = false
+	board.Cells[2][0].IsHole = false
+	board.Cells[2][1].IsHole = false
+	board.Cells[2][2].IsHole = false
 
-	board.Cells[0][0].AdjMines = 1
-	board.Cells[0][1].AdjMines = 0
-	board.Cells[0][2].AdjMines = 1
-	board.Cells[1][0].AdjMines = 1
-	board.Cells[1][1].AdjMines = 1
-	board.Cells[1][2].AdjMines = 1
-	board.Cells[2][0].AdjMines = 0
-	board.Cells[2][1].AdjMines = 0
-	board.Cells[2][2].AdjMines = 0
+	board.Cells[0][0].AdjHoles = 1
+	board.Cells[0][1].AdjHoles = 0
+	board.Cells[0][2].AdjHoles = 1
+	board.Cells[1][0].AdjHoles = 1
+	board.Cells[1][1].AdjHoles = 1
+	board.Cells[1][2].AdjHoles = 1
+	board.Cells[2][0].AdjHoles = 0
+	board.Cells[2][1].AdjHoles = 0
+	board.Cells[2][2].AdjHoles = 0
 
 	// 1 x 1     1 x 1
 	// 1 1 1 =>  1 '' 1
@@ -102,7 +102,7 @@ func TestOpenAdjacentCells(t *testing.T) {
 		t.Errorf("Expected cell (2, 2) to be opened, but it is not")
 	}
 
-	// Check that cells with mines or adjacent mines are not opened
+	// Check that cells with holes or adjacent holes are not opened
 	if board.Cells[0][1].IsOpen {
 		t.Errorf("Expected cell (0, 1) to be unopened, but it is opened")
 	}
@@ -116,9 +116,9 @@ func TestOpenAdjacentCells(t *testing.T) {
 
 func TestFlagCell(t *testing.T) {
 	boardSize := 8
-	minesCount := 10
+	holesCount := 10
 
-	board := NewArrayBoard(boardSize, minesCount)
+	board := NewArrayBoard(boardSize, holesCount)
 
 	// Test flagging a cell
 	x, y := 0, 0
@@ -134,11 +134,11 @@ func TestFlagCell(t *testing.T) {
 	}
 }
 
-// Helper function to find the coordinates of a mine in the board
-func findMineCoordinates(board ArrayBoard) (int, int) {
+// Helper function to find the coordinates of a hole in the board
+func findHoleCoordinates(board ArrayBoard) (int, int) {
 	for i, row := range board.Cells {
 		for j, cell := range row {
-			if cell.IsMine {
+			if cell.IsHole {
 				return i, j
 			}
 		}

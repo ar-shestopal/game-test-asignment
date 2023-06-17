@@ -7,29 +7,34 @@ import (
 type Board interface {
 	OpenCell(x, y int)
 	FlagCell(x, y int)
+	IsHole(x, y int) bool
 	Fields() interface{}
+	GetHolesCount() int
+	GetNotFoundCount() int
 }
 
 type ArrayBoard struct {
-	Cells [][]Cell
+	Cells         [][]Cell
+	HolesCount    int
+	NotFoundCount int
 }
 
 type Cell struct {
-	IsMine   bool
+	IsHole   bool
 	IsFlag   bool
 	IsOpen   bool
-	AdjMines int
+	AdjHoles int
 	X        int
 	Y        int
 }
 
-func NewArrayBoard(boardSize int, minesCount int) ArrayBoard {
+func NewArrayBoard(boardSize int, holesCount int) ArrayBoard {
 	b := make([][]Cell, boardSize)
 	for i := range b {
 		b[i] = make([]Cell, boardSize)
 	}
 
-	// Distribute mines using Sprinkling Algorithm
+	// Distribute holes using Sprinkling Algorithm
 	availableCells := make([][2]int, boardSize*boardSize)
 	for i := 0; i < boardSize; i++ {
 		for j := 0; j < boardSize; j++ {
@@ -37,23 +42,35 @@ func NewArrayBoard(boardSize int, minesCount int) ArrayBoard {
 		}
 	}
 
-	for i := 0; i < minesCount; i++ {
+	for i := 0; i < holesCount; i++ {
 		index := rand.Intn(len(availableCells))
 		cell := availableCells[index]
 		availableCells = append(availableCells[:index], availableCells[index+1:]...)
 
-		addMine(b, cell[0], cell[1])
+		addHole(b, cell[0], cell[1])
 	}
-	return ArrayBoard{Cells: b}
+	return ArrayBoard{Cells: b, HolesCount: boardSize * boardSize, NotFoundCount: boardSize*boardSize - holesCount}
 }
 
 func (b *ArrayBoard) Fields() interface{} {
 	return b.Cells
 }
 
-func addMine(cells [][]Cell, x, y int) {
-	// Add mine to the specified cell
-	cells[x][y].IsMine = true
+func (b *ArrayBoard) IsHole(x, y int) bool {
+	return b.Cells[x][y].IsHole
+}
+
+func (b *ArrayBoard) GetHolesCount() int {
+	return b.HolesCount
+}
+
+func (b *ArrayBoard) GetNotFoundCount() int {
+	return b.NotFoundCount
+}
+
+func addHole(cells [][]Cell, x, y int) {
+	// Add hole to the specified cell
+	cells[x][y].IsHole = true
 
 	// Get the board size
 	boardSize := len(cells)
@@ -70,8 +87,8 @@ func addMine(cells [][]Cell, x, y int) {
 		nx, ny := x+dir[0], y+dir[1]
 		// Check if the adjacent cell is within the board boundaries
 		if nx >= 0 && nx < boardSize && ny >= 0 && ny < boardSize {
-			// Increment the AdjMines count of the adjacent cell
-			cells[nx][ny].AdjMines++
+			// Increment the AdjHoles count of the adjacent cell
+			cells[nx][ny].AdjHoles++
 		}
 	}
 }
@@ -91,13 +108,14 @@ func (b ArrayBoard) OpenCell(x, y int) {
 		return
 	}
 
-	// Check if the cell is a mine
-	if cell.IsMine {
+	// Check if the cell is a hole
+	if cell.IsHole {
 		return
 	}
 
 	// Open the cell
 	b.Cells[x][y].IsOpen = true
+	b.NotFoundCount--
 
 	// Define the eight directions to check for adjacent cells
 	directions := [8][2]int{
@@ -116,14 +134,14 @@ func (b ArrayBoard) OpenCell(x, y int) {
 
 		cell := b.Cells[nx][ny]
 
-		if !cell.IsMine && !cell.IsOpen && !cell.IsFlag && cell.AdjMines == 0 {
+		if !cell.IsHole && !cell.IsOpen && !cell.IsFlag && cell.AdjHoles == 0 {
 			b.OpenCell(nx, ny)
 		}
 
 	}
 }
 
-func (b ArrayBoard) FlagCell(x, y int) {
+func (b *ArrayBoard) FlagCell(x, y int) {
 	// Get the board size
 	boardSize := len(b.Cells)
 
@@ -139,4 +157,11 @@ func (b ArrayBoard) FlagCell(x, y int) {
 
 	// Toggle the flag
 	b.Cells[x][y].IsFlag = !b.Cells[x][y].IsFlag
+
+	// Update the holes count
+	if b.Cells[x][y].IsFlag && b.Cells[x][y].IsHole {
+		b.HolesCount--
+	} else if !b.Cells[x][y].IsFlag && b.Cells[x][y].IsHole {
+		b.HolesCount++
+	}
 }

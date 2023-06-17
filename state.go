@@ -16,17 +16,15 @@ type GameState interface {
 }
 
 type State struct {
-	GameBoard  Board
-	Won        bool
-	Lost       bool
-	MinesCount int
+	GameBoard Board
+	Won       bool
+	Lost      bool
 }
 
 func NewGameState(b Board) State {
 	s := State{GameBoard: b}
 	s.Won = false
 	s.Lost = false
-	s.MinesCount = DEFAULT_MINES
 	return s
 }
 
@@ -43,7 +41,7 @@ func (s *State) PerformAction(row, col int, action Action) {
 
 	field := s.GameBoard.Fields().([][]Cell)[row][col]
 
-	if field.IsMine && action == "open" {
+	if field.IsHole && action == "open" {
 		s.Lost = true
 		return
 	}
@@ -53,16 +51,9 @@ func (s *State) PerformAction(row, col int, action Action) {
 		s.GameBoard.OpenCell(row, col)
 	} else if action == "flag" {
 		s.GameBoard.FlagCell(row, col)
-
-		field := s.GameBoard.Fields().([][]Cell)[row][col]
-		if field.IsFlag && field.IsMine {
-			s.MinesCount--
-		} else if !field.IsFlag && field.IsMine {
-			s.MinesCount++
-		}
 	}
 
-	if s.MinesCount == 0 {
+	if s.GameBoard.GetHolesCount() == 0 || s.GameBoard.GetNotFoundCount() == 0 {
 		s.Won = true
 	}
 }

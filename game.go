@@ -13,8 +13,8 @@ type ConsoleGame struct {
 	UI    UIPresenter
 }
 
-func NewConsoleGame(boardSize, minesCount int) ConsoleGame {
-	board := NewArrayBoard(boardSize, minesCount)
+func NewConsoleGame(boardSize, holesCount int) ConsoleGame {
+	board := NewArrayBoard(boardSize, holesCount)
 	state := NewGameState(&board)
 	ui := ConsoleUI{}
 	// game := NewConsoleGame(&state, &ui)

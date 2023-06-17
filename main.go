@@ -1,11 +1,11 @@
 package main
 
 func main() {
-	// For simplicity, we are using a fixed number of mines and board size
+	// For simplicity, we are using a fixed number of holes and board size
 	boardSize := DEFAULT_BOARD_SIZE
-	minesCount := DEFAULT_MINES
+	holesCount := DEFAULT_MINES
 
-	game := NewConsoleGame(boardSize, minesCount)
+	game := NewConsoleGame(boardSize, holesCount)
 	game.Run()
 
 }

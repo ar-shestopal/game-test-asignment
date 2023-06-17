@@ -33,7 +33,7 @@ type State struct {
 	GameBoard  Board
 	Won        bool
 	Lost       bool
-	MinesCount int
+	HolesCount int
 ```
 Where `Board` type is
 ```
@@ -51,15 +51,15 @@ type ArrayBoard struct {
 }
 
 type Cell struct {
-	IsMine   bool
+	IsHole   bool
 	IsFlag   bool
 	IsOpen   bool
-	AdjMines int
+	AdjHoles int
 	X        int
 	Y        int
 }
 ```
-Here `IsMine`, `IsFlag`(means we mark it but not open), `AdjMines` number of mines in adjaisent cells.
+Here `IsHole`, `IsFlag`(means we mark it but not open), `AdjHoles` number of holes in adjaisent cells.
 
 Part 2:
 Populate your data structure with K black holes placed in random locations. Note that should
@@ -67,13 +67,13 @@ place exactly K black holes and their location should be random with a uniform d
 
 We populate the board in
 ```
-func NewArrayBoard(boardSize int, minesCount int) ArrayBoard {
+func NewArrayBoard(boardSize int, holesCount int) ArrayBoard {
 	b := make([][]Cell, boardSize)
 	for i := range b {
 		b[i] = make([]Cell, boardSize)
 	}
 
-	// Distribute mines using Sprinkling Algorithm
+	// Distribute holes using Sprinkling Algorithm
 	availableCells := make([][2]int, boardSize*boardSize)
 	for i := 0; i < boardSize; i++ {
 		for j := 0; j < boardSize; j++ {
@@ -81,17 +81,17 @@ func NewArrayBoard(boardSize int, minesCount int) ArrayBoard {
 		}
 	}
 
-	for i := 0; i < minesCount; i++ {
+	for i := 0; i < holesCount; i++ {
 		index := rand.Intn(len(availableCells))
 		cell := availableCells[index]
 		availableCells = append(availableCells[:index], availableCells[index+1:]...)
 
-		addMine(b, cell[0], cell[1])
+		addHole(b, cell[0], cell[1])
 	}
 	return ArrayBoard{Cells: b}
 }
 ```
-I Gooogled and implemented specific algorithm to make uniform destributions of Holes (I called them Mines)
+I Gooogled and implemented specific algorithm to make uniform destributions of Holes (I called them Holes)
 
 Part 3
 For each cell without a black hole, compute and store the number of adjacent black holes. Note
@@ -100,7 +100,7 @@ that diagonals also count. E.g.
 1 3 H
 H 2 1
 
-Method `addMine` adds Hole(Mine) on the board, and iterates over every adjaisent cess in increments it's `AdjMines`.
+Method `addHole` adds Hole(Hole) on the board, and iterates over every adjaisent cess in increments it's `AdjHoles`.
 
 Part 4
 Write the logic that updates which cells become visible when a cell is clicked. Note that if a cell
@@ -114,7 +114,7 @@ func (s *State) PerformAction(row, col int, action Action) {
 
 	field := s.GameBoard.Fields().([][]Cell)[row][col]
 
-	if field.IsMine && action == "open" {
+	if field.IsHole && action == "open" {
 		s.Lost = true
 		return
 	}
@@ -126,14 +126,14 @@ func (s *State) PerformAction(row, col int, action Action) {
 		s.GameBoard.FlagCell(row, col)
 
 		field := s.GameBoard.Fields().([][]Cell)[row][col]
-		if field.IsFlag && field.IsMine {
-			s.MinesCount--
-		} else if !field.IsFlag && field.IsMine {
-			s.MinesCount++
+		if field.IsFlag && field.IsHole {
+			s.HolesCount--
+		} else if !field.IsFlag && field.IsHole {
+			s.HolesCount++
 		}
 	}
 
-	if s.MinesCount == 0 {
+	if s.HolesCount == 0 {
 		s.Won = true
 	}
 }
@@ -144,7 +144,7 @@ We could also add condition to win if use opens all cells but Holes, but I ommit
 
 If User flags cell that is already flagged, it toggles the flag.
 
-Also this method on `State.MinesCount` field, to know when all Mines are Flagged.
+Also this method on `State.HolesCount` field, to know when all Holes are Flagged.
 
 Note that there’s no requirement to build a UI for the game. Only the logic for updating the data structure is needed.
 
@@ -174,7 +174,7 @@ The board looks like this
    ------------------------
 ```
 
-with row/column numbers and number of adjecent Holes (Mines) in every Cell. Holes(Mines) are marked with `X` to simplify testing.
+with row/column numbers and number of adjecent Holes (Holes) in every Cell. Holes(Holes) are marked with `X` to simplify testing.
 
 Also there is no validation of user input.
 

@@ -45,10 +45,10 @@ func (ui *ConsoleUI) DrawBoard(b Board) {
 				fmt.Print("  |")
 			} else if cell.IsFlag {
 				fmt.Print(" F|")
-			} else if cell.IsMine {
+			} else if cell.IsHole {
 				fmt.Print(" X|")
 			} else {
-				fmt.Printf("%2d|", cell.AdjMines)
+				fmt.Printf("%2d|", cell.AdjHoles)
 			}
 		}
 
