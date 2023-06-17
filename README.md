@@ -7,7 +7,7 @@ This is a simple game written in Go.
 
 Vendor Take Home Interview Questions
 Proxx
-Rules and playable game. Review the rules and familiarize yourself with the game. You don’t
+[Rules and playable game](https://proxx.app/). Review the rules and familiarize yourself with the game. You don’t
 need to implement the flag functionality.
 There are three parts to the exercise. For each part, please include a working coded solution
 along with an explanation for choosing a certain approach.
