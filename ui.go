@@ -7,6 +7,10 @@ import (
 	"strconv"
 )
 
+const MAX_BOARD_SIZE = 20
+const DEFAULT_BOARD_SIZE = 8
+const DEFAULT_MINES = 3
+
 type UIPresenter interface {
 	// DrawBoard draws the board on the screen
 	DrawBoard(b Board)
@@ -14,10 +18,10 @@ type UIPresenter interface {
 	FinishGame()
 }
 
-type ConsoleUI struct{}
+type StdOutUI struct{}
 
 // Some code duplication but this section is not mandatory.
-func (ui *ConsoleUI) DrawBoard(b Board) {
+func (ui *StdOutUI) DrawBoard(b Board) {
 	// Clear the screen
 	ui.Clear()
 	// Draw column numbers
@@ -64,13 +68,13 @@ func (ui *ConsoleUI) DrawBoard(b Board) {
 }
 
 // Works only on Unix-like systems
-func (ui *ConsoleUI) Clear() {
+func (ui *StdOutUI) Clear() {
 	cmd := exec.Command("clear")
 	cmd.Stdout = os.Stdout
 	cmd.Run()
 }
 
-func (ui *ConsoleUI) GetAction() (row, col int, action string) {
+func (ui *StdOutUI) GetAction() (row, col int, action string) {
 	fmt.Println("Enter cell coordinates (row, col) and action (open/flag):")
 	_, err := fmt.Scanf("%d %d %s", &row, &col, &action)
 	if err != nil {
@@ -81,11 +85,14 @@ func (ui *ConsoleUI) GetAction() (row, col int, action string) {
 	return
 }
 
-func (ui *ConsoleUI) FinishGame() {
+func (ui *StdOutUI) FinishGame() {
 	fmt.Println("Game finished.")
 }
 
-func (ui *ConsoleUI) ReadSize() int {
+// For simplicity, we are using a fixed number of holes
+// it is easto create method to read the number of holes from the user
+// by analogy with ReadBoardSize() method
+func (ui *StdOutUI) ReadBoardSize() int {
 	// Read command-line arguments
 	args := os.Args[1:] // Exclude the program name itself
 
@@ -105,6 +112,11 @@ func (ui *ConsoleUI) ReadSize() int {
 	if size < 1 {
 		fmt.Printf("Invalid size argumen. Creating game with %d*%d board size \n", DEFAULT_BOARD_SIZE, DEFAULT_BOARD_SIZE)
 		return DEFAULT_BOARD_SIZE
+	}
+
+	if size > MAX_BOARD_SIZE {
+		fmt.Printf("Invalid size argumen. Creating game with %d*%d board size \n", MAX_BOARD_SIZE, MAX_BOARD_SIZE)
+		return MAX_BOARD_SIZE
 	}
 
 	fmt.Printf("Creating game with %d*%d board size \n", size, size)

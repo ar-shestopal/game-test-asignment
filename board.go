@@ -42,14 +42,16 @@ func NewArrayBoard(boardSize int, holesCount int) ArrayBoard {
 		}
 	}
 
+	board := ArrayBoard{Cells: b, NotFoundCount: boardSize*boardSize - holesCount}
+
 	for i := 0; i < holesCount; i++ {
 		index := rand.Intn(len(availableCells))
 		cell := availableCells[index]
 		availableCells = append(availableCells[:index], availableCells[index+1:]...)
 
-		addHole(b, cell[0], cell[1])
+		board.AddHole(cell[0], cell[1])
 	}
-	return ArrayBoard{Cells: b, HolesCount: boardSize * boardSize, NotFoundCount: boardSize*boardSize - holesCount}
+	return board
 }
 
 func (b *ArrayBoard) Fields() interface{} {
@@ -68,12 +70,13 @@ func (b *ArrayBoard) GetNotFoundCount() int {
 	return b.NotFoundCount
 }
 
-func addHole(cells [][]Cell, x, y int) {
+func (b *ArrayBoard) AddHole(x, y int) {
 	// Add hole to the specified cell
-	cells[x][y].IsHole = true
+	b.Cells[x][y].IsHole = true
+	b.HolesCount++
 
 	// Get the board size
-	boardSize := len(cells)
+	boardSize := len(b.Cells)
 
 	// Define the eight directions to check for adjacent cells
 	directions := [8][2]int{
@@ -88,7 +91,7 @@ func addHole(cells [][]Cell, x, y int) {
 		// Check if the adjacent cell is within the board boundaries
 		if nx >= 0 && nx < boardSize && ny >= 0 && ny < boardSize {
 			// Increment the AdjHoles count of the adjacent cell
-			cells[nx][ny].AdjHoles++
+			b.Cells[nx][ny].AdjHoles++
 		}
 	}
 }

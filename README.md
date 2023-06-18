@@ -23,7 +23,6 @@ To represent the game state I created
 ```
 type GameState interface {
 	PerformAction(x, y int, action Action)
-	GetBoard() Board
 	IsFinished() bool
 }
 ```

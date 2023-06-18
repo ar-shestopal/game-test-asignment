@@ -44,22 +44,22 @@ func TestPerformAction_Flag(t *testing.T) {
 		t.Errorf("Expected cell (0, 0) to be flagged, but it is not")
 	}
 
-	if state.HolesCount != 1 {
-		t.Errorf("Expected holes count to be 1, but it is %d", state.HolesCount)
+	if state.GameBoard.GetHolesCount() != 1 {
+		t.Errorf("Expected holes count to be 1, but it is %d", state.GameBoard.GetHolesCount())
 	}
 
 	// Perform a flag action on a hole cell
 	// Add one more hole to the board
 	state.GameBoard.Fields().([][]Cell)[0][0].IsHole = true
-	state.HolesCount = 2
+	state.GameBoard.(*ArrayBoard).HolesCount = 2
 
 	state.PerformAction(0, 1, FlagAction)
 	if !state.GameBoard.Fields().([][]Cell)[0][1].IsFlag {
 		t.Errorf("Expected hole cell (0, 1) to be flagged, but it is not")
 	}
 
-	if state.HolesCount != 1 {
-		t.Errorf("Expected holes count to be 1, but it is %d", state.HolesCount)
+	if state.GameBoard.GetHolesCount() != 1 {
+		t.Errorf("Expected holes count to be 1, but it is %d", state.GameBoard.GetHolesCount())
 	}
 
 	if state.Lost {
@@ -76,8 +76,8 @@ func TestPerformAction_Flag(t *testing.T) {
 		t.Errorf("Expected cell (0, 0) to be unflagged, but it is flagged")
 	}
 
-	if state.HolesCount != 2 {
-		t.Errorf("Expected holes count to be 2, but it is %d", state.HolesCount)
+	if state.GameBoard.GetHolesCount() != 2 {
+		t.Errorf("Expected holes count to be 2, but it is %d", state.GameBoard.GetHolesCount())
 	}
 }
 
@@ -85,9 +85,8 @@ func TestPerformAction_FlagAllHoles(t *testing.T) {
 	board := createTestBoard()
 	// Create a test instance of State
 	state := NewGameState(&board)
+	state.GameBoard.(*ArrayBoard).AddHole(0, 2)
 
-	state.GameBoard.Fields().([][]Cell)[0][2].IsHole = true
-	// Perform a flag action on all hole cells
 	state.PerformAction(0, 1, FlagAction)
 	state.PerformAction(0, 2, FlagAction)
 
@@ -95,7 +94,7 @@ func TestPerformAction_FlagAllHoles(t *testing.T) {
 	fmt.Println(state.GameBoard.Fields().([][]Cell)[0][1].IsHole)
 
 	if state.GameBoard.GetHolesCount() != 0 {
-		t.Errorf("Expected holes count to be 0, but it is %d", state.HolesCount)
+		t.Errorf("Expected holes count to be 0, but it is %d", state.GameBoard.GetHolesCount())
 	}
 
 	if !state.Won {
@@ -111,25 +110,7 @@ func createTestBoard() ArrayBoard {
 	board := NewArrayBoard(3, 0)
 
 	// Set up the board with specific cell configurations
-	board.Cells[0][0].IsHole = false
-	board.Cells[0][1].IsHole = true
-	board.Cells[0][2].IsHole = false
-	board.Cells[1][0].IsHole = false
-	board.Cells[1][1].IsHole = false
-	board.Cells[1][2].IsHole = false
-	board.Cells[2][0].IsHole = false
-	board.Cells[2][1].IsHole = false
-	board.Cells[2][2].IsHole = false
-
-	board.Cells[0][0].AdjHoles = 1
-	board.Cells[0][1].AdjHoles = 0
-	board.Cells[0][2].AdjHoles = 1
-	board.Cells[1][0].AdjHoles = 1
-	board.Cells[1][1].AdjHoles = 1
-	board.Cells[1][2].AdjHoles = 1
-	board.Cells[2][0].AdjHoles = 0
-	board.Cells[2][1].AdjHoles = 0
-	board.Cells[2][2].AdjHoles = 0
+	board.AddHole(0, 1)
 
 	// 1 x 1
 	// 1 1 1

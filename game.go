@@ -1,8 +1,5 @@
 package main
 
-const DEFAULT_BOARD_SIZE = 8
-const DEFAULT_MINES = 3
-
 // GameRunner is an interface that defines the Run method
 type GameRunner interface {
 	Run()
@@ -13,15 +10,14 @@ type ConsoleGame struct {
 	UI    UIPresenter
 }
 
-func NewConsoleGame(boardSize, holesCount int) ConsoleGame {
+func NewConsoleGame(ui UIPresenter, boardSize, holesCount int) ConsoleGame {
 	board := NewArrayBoard(boardSize, holesCount)
 	state := NewGameState(&board)
-	ui := ConsoleUI{}
 	// game := NewConsoleGame(&state, &ui)
 	g := ConsoleGame{
 		// Not sure if we need boardSize here,
 		State: &state,
-		UI:    &ui,
+		UI:    ui,
 	}
 	return g
 }
