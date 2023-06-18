@@ -19,7 +19,7 @@ Choose a data structure(s) to represent the game state. You need to keep track o
 - Counts of # of adjacent black holes
 - Whether a cell is open
 
-To represent game state I created
+To represent the game state I created
 ```
 type GameState interface {
 	PerformAction(x, y int, action Action)
@@ -33,9 +33,8 @@ type State struct {
 	GameBoard  Board
 	Won        bool
 	Lost       bool
-	HolesCount int
 ```
-Where `Board` type is
+Where the `Board` type is
 ```
 type Board interface {
 	OpenCell(x, y int)
@@ -48,6 +47,8 @@ Where ```ArrayBoard``` implements it for our game.
 ```
 type ArrayBoard struct {
 	Cells [][]Cell
+	HolesCount    int
+	NotFoundCount int
 }
 
 type Cell struct {
@@ -59,7 +60,83 @@ type Cell struct {
 	Y        int
 }
 ```
-Here `IsHole`, `IsFlag`(means we mark it but not open), `AdjHoles` number of holes in adjaisent cells.
+Here `IsHole`, `IsFlag`(means we mark it but not open), and `AdjHoles` a number of holes in adjacent cells.
+
+The Board is responsible for opening, flagging Cells, and maintaining a count of opened/flagged cells to determine Win/Loose conditions
+
+```func (b ArrayBoard) OpenCell(x, y int) {
+	// Get the board size
+	boardSize := len(b.Cells)
+
+	// Check if the cell is within the board boundaries
+	if x < 0 || x >= boardSize || y < 0 || y >= boardSize {
+		return
+	}
+
+	cell := b.Cells[x][y]
+	// Check if the cell is already open
+	if cell.IsOpen {
+		return
+	}
+
+	// Check if the cell is a hole
+	if cell.IsHole {
+		return
+	}
+
+	// Open the cell
+	b.Cells[x][y].IsOpen = true
+	b.NotFoundCount--
+
+	// Define the eight directions to check for adjacent cells
+	directions := [8][2]int{
+		{-1, -1}, {-1, 0}, {-1, 1},
+		{0, -1}, {0, 1},
+		{1, -1}, {1, 0}, {1, 1},
+	}
+
+	// Iterate over the directions
+	for _, dir := range directions {
+		nx, ny := x+dir[0], y+dir[1]
+
+		if nx < 0 || nx >= boardSize || ny < 0 || ny >= boardSize {
+			continue
+		}
+
+		cell := b.Cells[nx][ny]
+
+		if !cell.IsHole && !cell.IsOpen && !cell.IsFlag && cell.AdjHoles == 0 {
+			b.OpenCell(nx, ny)
+		}
+
+	}
+}
+
+func (b *ArrayBoard) FlagCell(x, y int) {
+	// Get the board size
+	boardSize := len(b.Cells)
+
+	// Check if the cell is within the board boundaries
+	if x < 0 || x >= boardSize || y < 0 || y >= boardSize {
+		return
+	}
+
+	// Check if the cell is already open
+	if b.Cells[x][y].IsOpen {
+		return
+	}
+
+	// Toggle the flag
+	b.Cells[x][y].IsFlag = !b.Cells[x][y].IsFlag
+
+	// Update the holes count
+	if b.Cells[x][y].IsFlag && b.Cells[x][y].IsHole {
+		b.HolesCount--
+	} else if !b.Cells[x][y].IsFlag && b.Cells[x][y].IsHole {
+		b.HolesCount++
+	}
+}
+```
 
 Part 2:
 Populate your data structure with K black holes placed in random locations. Note that should
@@ -100,7 +177,7 @@ that diagonals also count. E.g.
 1 3 H
 H 2 1
 
-Method `addHole` adds Hole(Hole) on the board, and iterates over every adjaisent cess in increments it's `AdjHoles`.
+Method `addHole` adds Hole(Hole) on the board, and iterates over every adjacent cess in increments it's `AdjHoles`.
 
 Part 4
 Write the logic that updates which cells become visible when a cell is clicked. Note that if a cell
@@ -112,9 +189,7 @@ As performing the action changes the state, I added `PerformAction` method to th
 func (s *State) PerformAction(row, col int, action Action) {
 	fmt.Println("Performing action", action, "on cell", row, col)
 
-	field := s.GameBoard.Fields().([][]Cell)[row][col]
-
-	if field.IsHole && action == "open" {
+	if s.GameBoard.IsHole(row, col) && action == "open" {
 		s.Lost = true
 		return
 	}
@@ -124,33 +199,28 @@ func (s *State) PerformAction(row, col int, action Action) {
 		s.GameBoard.OpenCell(row, col)
 	} else if action == "flag" {
 		s.GameBoard.FlagCell(row, col)
-
-		field := s.GameBoard.Fields().([][]Cell)[row][col]
-		if field.IsFlag && field.IsHole {
-			s.HolesCount--
-		} else if !field.IsFlag && field.IsHole {
-			s.HolesCount++
-		}
 	}
 
-	if s.HolesCount == 0 {
+	if s.GameBoard.GetHolesCount() == 0 || s.GameBoard.GetNotFoundCount() == 0 {
 		s.Won = true
 	}
 }
 ```
-For each cess that user has chosen, it can perform Open or Flag action.
-If user opens Hole, he is loosing, if user Flags all Holes he wins.
-We could also add condition to win if use opens all cells but Holes, but I ommited it.
+For each Cell that the user has chosen, it can perform an Open or Flag action.
+If the user opens a Hole, he is losing, if the user Flags all Holes he wins.
+If the user opens all cells that are not Holes he wins
 
-If User flags cell that is already flagged, it toggles the flag.
+If the user flags the Cell that is already flagged, it toggles the flag.
 
-Also this method on `State.HolesCount` field, to know when all Holes are Flagged.
+Also this method `State.GetHolesCount()` field, to know when all Holes are Flagged and `s.GameBoard.GetNotFoundCount()` to know when all non-Holes Cells are opened.
+
+
 
 Note that there’s no requirement to build a UI for the game. Only the logic for updating the data structure is needed.
 
-Althos UI is not required I added simple one in the console.
-It request user to input in format `row, col action(open/flag)`
-Examle: `0 7 open` or `1 3 flag`
+Although UI is not required I added a simple one in the console.
+It requests the user to input in format `row, col action(open/flag)`
+Example: `0 7 open` or `1 3 flag`
 
 The board looks like this
 ```
@@ -174,7 +244,7 @@ The board looks like this
    ------------------------
 ```
 
-with row/column numbers and number of adjecent Holes (Holes) in every Cell. Holes(Holes) are marked with `X` to simplify testing.
+with row/column numbers and the number of adjacent Holes (Holes) in every Cell. Holes(Holes) are marked with `X` to simplify testing.
 
 Also there is no validation of user input.
 

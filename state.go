@@ -39,9 +39,7 @@ func (s *State) IsFinished() bool {
 func (s *State) PerformAction(row, col int, action Action) {
 	fmt.Println("Performing action", action, "on cell", row, col)
 
-	field := s.GameBoard.Fields().([][]Cell)[row][col]
-
-	if field.IsHole && action == "open" {
+	if s.GameBoard.IsHole(row, col) && action == "open" {
 		s.Lost = true
 		return
 	}
