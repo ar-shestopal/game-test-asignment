@@ -12,6 +12,13 @@ need to implement the flag functionality.
 There are three parts to the exercise. For each part, please include a working coded solution
 along with an explanation for choosing a certain approach.
 
+## Important commentary.
+To emphasize low coupling my classes interact over interfaces as much as possible. Despite that in current state of the code there is only one implementation for each interface, as for the test assignment, I believe, it is beneficial to demonstrate ability to approach this problem.
+
+Also from experience, real world application require more using interfaces then creating a new ones, so my approach is mostly dictated by the existing code style, aggreements and requirements of a project or feature.
+
+Also I did QA the programm extensively, only basic cases of loosing and wining, there might be bugs.
+
 Part 1:
 Choose a data structure(s) to represent the game state. You need to keep track of the following:
 - NxN board

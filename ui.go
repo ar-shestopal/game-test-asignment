@@ -15,7 +15,8 @@ type UIPresenter interface {
 	// DrawBoard draws the board on the screen
 	DrawBoard(b Board)
 	GetAction() (int, int, string)
-	FinishGame()
+	GameWon()
+	GameLost()
 }
 
 type StdOutUI struct{}
@@ -85,8 +86,12 @@ func (ui *StdOutUI) GetAction() (row, col int, action string) {
 	return
 }
 
-func (ui *StdOutUI) FinishGame() {
-	fmt.Println("Game finished.")
+func (ui *StdOutUI) GameWon() {
+	fmt.Println("Game won!")
+}
+
+func (ui *StdOutUI) GameLost() {
+	fmt.Println("Game lost!")
 }
 
 // For simplicity, we are using a fixed number of holes

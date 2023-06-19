@@ -2,6 +2,7 @@ package main
 
 import (
 	"math/rand"
+	"time"
 )
 
 type Board interface {
@@ -43,6 +44,7 @@ func NewArrayBoard(boardSize int, holesCount int) ArrayBoard {
 	}
 
 	board := ArrayBoard{Cells: b, NotFoundCount: boardSize*boardSize - holesCount}
+	rand.Seed(time.Now().UTC().UnixNano())
 
 	for i := 0; i < holesCount; i++ {
 		index := rand.Intn(len(availableCells))

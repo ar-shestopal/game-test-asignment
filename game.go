@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 // GameRunner is an interface that defines the Run method
 type GameRunner interface {
 	Run()
@@ -26,11 +28,16 @@ func (g *ConsoleGame) Run() {
 	board := g.State.GetBoard()
 	g.UI.DrawBoard(board)
 
-	for !g.State.IsFinished() {
-		x, y, action := g.UI.GetAction()
-		g.State.PerformAction(x, y, Action(action))
+	for !g.State.IsWon() && !g.State.IsLost() {
+		row, col, action := g.UI.GetAction()
+		g.State.PerformAction(row, col, Action(action))
+		fmt.Println(g.State, g.State.IsLost(), g.State.IsWon())
 		g.UI.DrawBoard(board)
 	}
 
-	g.UI.FinishGame()
+	if g.State.IsWon() {
+		g.UI.GameWon()
+	} else {
+		g.UI.GameLost()
+	}
 }

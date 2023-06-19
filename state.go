@@ -12,7 +12,8 @@ const (
 type GameState interface {
 	PerformAction(x, y int, action Action)
 	GetBoard() Board
-	IsFinished() bool
+	IsWon() bool
+	IsLost() bool
 }
 
 type State struct {
@@ -32,8 +33,12 @@ func (s *State) GetBoard() Board {
 	return s.GameBoard
 }
 
-func (s *State) IsFinished() bool {
-	return s.Won || s.Lost
+func (s *State) IsWon() bool {
+	return s.Won
+}
+
+func (s *State) IsLost() bool {
+	return s.Lost
 }
 
 func (s *State) PerformAction(row, col int, action Action) {
